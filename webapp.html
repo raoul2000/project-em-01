@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en" __manifest="ctdb-explorer.manifest">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CTDB Explorer</title>
+    <link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="node_modules/bootswatch/yeti/bootstrap.min.css" rel="stylesheet">
+    <link href="node_modules/jquery.mmenu/dist/css/jquery.mmenu.all.css" rel="stylesheet" media="screen"  charset="utf-8">
+    <link href="css/style.css" rel="stylesheet">
+  </head>
+  <body  id="app">
+
+    <div id="page" style="display:none;">
+
+      <nav class="navbar navbar-inverse navbar-fixed-top" style="-webkit-app-region: drag">
+        <div class="container">
+          <div class="navbar-header">
+            <a class="navbar-brand" href="#my-menu"><span id="icon-menu" class="glyphicon glyphicon-menu-hamburger"></span> Explore...</a>
+          </div>
+
+          <ul class="nav navbar-nav navbar-right">
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                Actions <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu">
+                <li><a id="do-reload" href="#">Reload</a></li>
+                <li role="separator" class="divider"></li>
+                <li><a id="do-about" href="#">About</a></li>
+              </ul>
+            </li>
+          </ul>
+
+          <div style="display:none;" class="btn-group btn-group-xs toolbar-window" role="group">
+            <button type="button" class="btn btn-default">+</button>
+            <button type="button" class="btn btn-default">[]</button>
+          </div>
+        </div>
+      </nav>
+
+      <div   class="content">
+      </div>
+        <div id="content" class="container">
+
+      </div> <!-- content -->
+
+      <div id="modal-about" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+              <h3>
+                Customer Technical Database Explorer
+              </h3>
+              <p>Version 1.0 - Copyright EidosMedia S.a.r.l</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+          </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+      </div><!-- /.modal -->
+
+      <nav id="my-menu">
+      </nav> <!-- menu -->
+
+    </div> <!-- page -->
+
+    <div id="splash">
+      <div class="container">
+        <div class="row">
+          <div class="col-xs-6 col-xs-offset-3 ">
+            <h1 class="splash">CTDB Explorer</h1>
+            <div class="text-center">
+              Customer Technical Data Base  <hr/>
+              <button id="btn-start-app" class="btn btn-primary" disabled="disabled">Loading ...</button>
+              <div id="txt-progress" class="text-muted small" style="display:none;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script id="tmpl-group-detail" type="text/x-handlebars-template">
+      <p class="small" style="margin-top:10px;"><span class="text-muted">ip address</span> : {{ip}} -
+        <span class="text-muted">hostname</span> : {{host}} -
+        <span class="text-muted">login</span> : {{login}}
+      </p>
+      <div class="row">
+        <div class="col-sm-6">
+          <h3>Servlets
+            {{#if tomcat}}
+              <div style="float:right">
+               <button id="btn-servlet-search" type="button" class="btn btn-default btn-xs">
+                 <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+               </button>
+              </div>
+            {{/if}}
+          </h3>
+          {{#if tomcat }}
+            <div id="filter-servlet-wrapper" class="form-group" style="display:none">
+              <input class="form-control input-sm" id="filter-servlet" value=""  placeholder="search ..." type="text">
+              <small class="pull-right text-muted">results : <span id="filter-servlet-count">0</span></small>
+            </div>
+            <table class="table table-condensed table-hover">
+              {{#each tomcat}}
+                <tr class="tomcat" >
+                  <td class="info name"><h5>{{name}}</h5></td>
+                  <td class="info">
+                    <small class="text-muted" style="font-size:10px">
+                      port : {{port}}<br/>
+                      version {{version}}
+                    </small>
+                  </td>
+                  <td class="info">
+                    <span class="tomcat-action">
+                      <a href="#/openURL/tomcat-manager/{{../ip}}/{{port}}/manager">manager</a>
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="text-muted">name</td>
+                  <td class="text-muted">version</td>
+                  <td class="text-muted"></td>
+                </tr>
+                {{#each servlet}}
+                  <tr class="servlet-info-tr">
+                    <td><a href="#/openURL/servlet-page/{{../../ip}}/{{../port}}/{{rid}}">{{rid}}</a></td>
+                    <td>{{version}}</td>
+                    <td>
+                      <span class="servlet-action">
+                        <a href="#/openURL/servlet-doc/{{../../ip}}/{{../port}}/{{rid}}">doc</a> |
+                        <a href="#/openURL/servlet-change/{{../../ip}}/{{../port}}/{{rid}}">changes</a>
+                      </span>
+                    </td>
+                  </tr>
+                {{/each}}
+              {{/each}}
+            </table>
+          {{else}}
+            <div class="alert alert-warning" role="alert">no servlet found</div>
+          {{/if}}
+
+        </div>
+        <div class="col-sm-6">
+          <h3>Components
+            {{#if component}}
+              <div style="float:right">
+               <button id="btn-comp-search" type="button" class="btn btn-default btn-xs">
+                 <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+               </button>
+              </div>
+            {{/if}}
+          </h3>
+          {{#if component}}
+            <div id="filter-comp-wrapper" class="form-group" style="display:none">
+              <input class="form-control input-sm" id="filter-comp" value=""  placeholder="search ..." type="text">
+              <small class="pull-right text-muted">results : <span id="filter-comp-count">0</span></small>
+            </div>
+
+            <table class="table table-condensed table-hover">
+              <tr>
+                <td class="text-muted">name</td>
+                <td class="text-muted">version</td>
+              </tr>
+              {{#each component}}
+                <tr class="comp-info-tr">
+                  <td>{{rid}}</td>
+                  <td>{{version}}</td>
+                </tr>
+              {{/each}}
+            </table>
+          {{else}}
+            <div class="alert alert-warning" role="alert">no component found</div>
+          {{/if}}
+        </div>
+      </div>
+
+    </script>
+
+    <script id="tmpl-group" type="text/x-handlebars-template">
+      <div class="row">
+
+        <div class="col-lg-12">
+          <div id="side_bar" class="clearfix">
+            {{env_group_alert}}
+            <h1 style="float:left;">{{ customer }} <small>{{ site }}</small></h1>
+          </div>
+          <hr style="margin-top:5px"/>
+        </div>
+
+        <div class="col-lg-12">
+          <ul id="tabs-row" class="nav nav-tabs">
+            {{#each group.serviceGroup}}
+              <li role="presentation">
+                <a class="tab-group" href="#/serviceGroup/{{create_url_service_group
+                  ../customer
+                  ../site
+                  ../env
+                  ../group.name
+                  name
+                }}">{{ name }}</a>
+              </li>
+            {{/each}}
+          </ul>
+        </div>
+        <div class="col-lg-12">
+          <div id="tab-content" class="clearfix">
+          </div>
+        </div>
+      </div>
+    </script>
+
+    <script id="tmpl-menu" type="text/x-handlebars-template">
+      <ul>
+        {{#each customer}}
+          <li><span>{{name}}</span>
+            <ul>
+              {{#each site}}
+                <li><span>{{name}}</span>
+                  <ul>
+                    {{#each env}}
+                      <li><span>{{name}}</span>
+                        <ul>
+                          {{#each group}}
+                            <li>
+                              <a href="#/group/{{create_url_group
+                                ../../../name
+                                ../../name
+                                ../name
+                                name
+                              }}">{{label}} <em class="text-muted">{{ name }}</em></a>
+                            </li>
+                          {{/each}}
+                        </ul>
+                      </li>
+                    {{/each}}
+                  </ul>
+                </li>
+              {{/each}}
+            </ul>
+          </li>
+        {{/each}}
+      </ul>
+      <hr/>
+    </script>
+
+    <script src="node_modules/jquery/dist/jquery.min.js" type="text/javascript"></script>
+    <script src="node_modules/bootstrap/dist/js/bootstrap.min.js" type="text/javascript"></script>
+    <script src="node_modules/jquery.mmenu/dist//js/jquery.mmenu.min.all.js" type="text/javascript"></script>
+    <script src="node_modules/handlebars/dist/handlebars.js" charset="utf-8"></script>
+    <script src="node_modules/nedb/browser-version/out/nedb.js" charset="utf-8"></script>
+    <script src="node_modules/q/q.js" charset="utf-8"></script>
+    <script src="node_modules/director/build/director.min.js" charset="utf-8"></script>
+    <script src="js/db-loader.js" charset="utf-8"></script>
+    <script src="js/app.js" charset="utf-8"></script>
+    <script type="text/javascript">
+      $(function() {
+        /**
+         * Reloads the app
+         */
+        $('#do-reload').on('click',function(ev){
+          db.on('compaction.done',function(){
+            console.log('compaction.done');
+            location.reload();
+          });
+          db.persistence.compactDatafile();
+        });
+        /**
+         * show model dialog about
+         */
+        $('#do-about').on('click',function(ev){
+          $('#modal-about').modal('show');
+        });
+
+        main();
+      });
+    </script>
+
+  </body>
+</html>
