@@ -1,18 +1,20 @@
 **This is a work in progress**
 
-# CTDB Explorer
+A desktop application and a web app to navigate into a simple embeded database.
+
+*warning* : Before running this app you must ensure that native DB data are available as XML file (they are not committed in this repo).
 
 ## Install
 
 ```
-git clone [repo]
-cd repo
+git clone https://github.com/raoul2000/project-em-01.git
+cd project-em-01
 npm install
 ```
 
 ## Usage
 
-### desktop app
+### Desktop app
 ```
 npm start
 ```
@@ -24,7 +26,7 @@ npm run package
 
 Once built, the result of the package is available in the folder `ctdb-explorer-win32-x64`.
 
-### web app
+### Web app
 
 The *web app* has been tested on Firefox and Chrome.
 
