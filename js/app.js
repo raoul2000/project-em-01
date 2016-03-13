@@ -119,7 +119,8 @@ function enableLiveFilter() {
 /**
 * initialize the menu template and MMenu plugin
 */
-function initGUI(progress){
+function initGUI(){
+  var deferred = Q.defer();
 
   var createMenu = function(docs){
     resolveTemplate("tmpl-menu", "my-menu", {
@@ -152,26 +153,22 @@ function initGUI(progress){
         .addClass('glyphicon-menu-hamburger');
     });
 
-    // we are all done : show main view
-    $('#btn-start-app').on('click',function(){
-      $('#splash').fadeOut(function(){
-        $('#page').fadeIn(100);
-      });
-    });
-    $('#btn-start-app').prop('disabled',false);
-    $('#btn-start-app').html('Enter');
-
-    progress('');
   };
 
   // load all record (customers) from db as we need them to be
   // able to build the MMenu widget. The returned document array
   // is sorted on the cusomer name field.
-  progress('initialize UI');
+
   db.find({}).sort({name : 1 }).exec(function(err,docs){
-    if(err) throw err;
-    createMenu(docs);
+    if(err) {
+      deferred.reject(new Error(err));
+    } else {
+      createMenu(docs);
+      deferred.resolve();
+    }
   });
+  
+  return deferred;
 }
 
 function doOpenUrl(url){
@@ -340,6 +337,7 @@ function initRouter() {
   // start router listen
   //var router = Router(routes);
   router.init();
+  return true;
 }
 /**
  *
@@ -356,5 +354,23 @@ function initRouter() {
      if( cb ) cb();
    };
 
-   loadDB(done,progress);
+   //loadDB(done,progress);
+   loadAllStores()
+   .then(initRouter)
+   .then(initGUI)
+   .then(function(result){
+     console.log("Data loaded and ready");
+     // we are all done : show main view
+     $('#btn-start-app').on('click',function(){
+       $('#splash').fadeOut(function(){
+         $('#page').fadeIn(100);
+       });
+     });
+     $('#btn-start-app').prop('disabled',false);
+     $('#btn-start-app').html('Enter');
+
+   })
+   .fail(function(error){
+     alert(error);
+   });
  }

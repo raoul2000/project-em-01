@@ -19,114 +19,41 @@ function loadAllStores(){
 
   /**
    * [loadStore description]
-   * @param  {[type]} url   [description]
-   * @param  {[type]} store [description]
-   * @return {[type]}       [description]
+   * @param  {[type]} url   data store url
+   * @param  {[type]} store Nedb instance representing the store
+   * @return {Promise}
    */
   function loadStore(url, store){
-    var deferred = Q.defer();
 
-    $.getJSON(url, function(remoteStore){
-      store.remove({},{multi:true}, function(err,numRemoved){
-        if(err) {
-          deferred.reject(new Error(err));
-        } else {
-          remoteStore.forEach(function(item) {
-            console.log(':' + item.name);
-            store.insert(item);
-          });
-          deferred.resolve();
-        }
+    return Q.Promise(function(resolve,reject) {
+      console.log("loading store : "+store.filename);
+      $.getJSON(url, function(remoteStore){
+        store.remove({},{multi:true}, function(err,numRemoved){
+          if(err) {
+            reject(new Error(err));
+          } else {
+            remoteStore.forEach(function(item) {
+              store.insert(item);
+            });
+            console.log("store loaded : "+store.filename+ " ("+remoteStore.length+" rows)");
+            resolve();
+          }
+        });
+      })
+      .fail(function(arg){
+        console.error("failed to load store : "+store.filename);
+        reject();
       });
-    })
-    .fail(function(arg){
-      console.error("failed to load store : "+store.filename);
-      deferred.reject();
     });
-    return deferred;
   }
+  
+  // TODO : before loading store, check if remote data is more recent than
+  // local and if not, don't dowload.
+  // TODO : if stores have been imported from local XML file, there should not
+  // be upload from server
 
   return Q.allSettled([
     loadStore('data/customer.db', db),
     loadStore('data/servlet.db', dbServlet)
   ]);
-}
-
-/**
- * [loadDB description]
- * @param  {Function} done     [description]
- * @param  {[type]}   progress [description]
- * @return {[type]}            [description]
- */
-function loadDB(done, progress) {
-
-  function loadRemoteDB(remoteDBMeta, localDBMeta) {
-    console.log('loading db and meta from remote : localDBMeta = ');
-    console.log(localDBMeta);
-    console.log('remoteDBMeta = ');
-    console.log(remoteDBMeta);
-
-    // expected :
-    // [ object, object, object ...]
-    progress('loading remote db');
-    $.getJSON('server/db/data.json', function(remoteDB) {
-      // delete local DB and replace with remote
-      db.remove({}, {
-        multi: true
-      }, function(err, numRemoved) {
-        if (err) {
-          console.error(err);
-          throw err;
-        }
-        console.log('existing db cleared : ' + numRemoved + ' records deleted');
-        console.log('inserting rows ..');
-        console.log(remoteDB);
-        progress('updating local db');
-        remoteDB.forEach(function(item) {
-          console.log(':' + item.name);
-          db.insert(item);
-        });
-
-        // update or insert the db meta record
-        if( localDBMeta) {
-          localDBMeta.version = remoteDBMeta.version;
-          dbMeta.update({ _id : localDBMeta._id}, localDBMeta);
-          console.log('local DB has been updated');
-        } else {
-          console.log('local DB has been inserted');
-          dbMeta.insert(remoteDBMeta);
-        }
-        console.log('local DB version is now ' + remoteDBMeta.version);
-        progress('db updated');
-        done();
-      });
-    })
-    .fail(done);
-  }
-
-  // get latest db version from server
-  // expected : { version : XXXX }
-  console.log('loading remote DB meta...');
-  progress('checking latest version');
-  $.getJSON('server/db/version.json', function(remoteDBMeta) {
-    dbMeta.findOne({}, function(err, localDBMeta) {
-      if (err) throw err;
-
-      if (localDBMeta === null) {
-        console.log('no local db metadata available');
-        loadRemoteDB(remoteDBMeta);
-      } else {
-        // compare local dbVersion with remote dbVersion
-        console.log('DB version : local = ' + localDBMeta.version + ' remote = ' + remoteDBMeta.version);
-        if (remoteDBMeta.version > localDBMeta.version) {
-          loadRemoteDB(remoteDBMeta, localDBMeta);
-        } else {
-          done();
-        }
-      }
-    });
-  })
-  .fail(function(){
-    done();
-  });
 }

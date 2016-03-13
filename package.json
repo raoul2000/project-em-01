@@ -1,6 +1,6 @@
 {
   "name": "ctdb-explorer",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "CTDB Explorer",
   "main": "index.js",
   "scripts": {

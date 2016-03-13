@@ -36,7 +36,7 @@ Here we are going to use **http-server**. If not done, install is globally with 
 ```
 npm install http-server -g
 ```
-Then start the server :
+Then start the server and open the `webapp.html` page :
 ```
-http-server . -o webapp.html
+npm run webapp
 ```
