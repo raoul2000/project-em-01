@@ -1,0 +1,22 @@
+CACHE MANIFEST
+# version 3
+CACHE:
+webapp.html
+css/style.css
+node_modules/bootstrap/dist/css/bootstrap.min.css
+node_modules/bootswatch/yeti/bootstrap.min.css
+node_modules/jquery.mmenu/dist/css/jquery.mmenu.all.css
+node_modules/bootstrap/dist/css/bootstrap.min.css.map
+node_modules/bootswatch/fonts/glyphicons-halflings-regular.woff2
+node_modules/jquery/dist/jquery.min.js
+node_modules/bootstrap/dist/js/bootstrap.min.js
+node_modules/jquery.mmenu/dist//js/jquery.mmenu.min.all.js
+node_modules/handlebars/dist/handlebars.js
+node_modules/nedb/browser-version/out/nedb.js
+node_modules/q/q.js
+node_modules/director/build/director.min.js
+js/db-loader.js
+js/app.js
+
+NETWORK:
+*
