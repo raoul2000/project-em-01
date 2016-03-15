@@ -116,10 +116,68 @@ function enableLiveFilter() {
     $('#filter-comp-wrapper').toggle();
   });
 }
+
+
+var openURL = function(type, ip, port, rid) {
+    console.log('openURL : type = '+type+' ip = '+ip+' port = '+port+' rid = '+rid);
+
+    if( type === 'tomcat-manager'){
+      doOpenUrl('http://'+ip+':'+port+'/manager/html');
+    } else {
+      dbServlet.findOne({ _id : rid}, function(error, doc){
+        if(error){
+          alert(error);
+        } else {
+          var url = '';
+          switch (type) {
+            case "servlet-page":
+              url = 'http://'+ip+':'+port+doc.path;
+              break;
+            case "servlet-doc":
+              url = doc.wikiDocumentationPath;
+              break;
+            case "servlet-change":
+              url = doc.wikiVersionsPath;
+              break;
+
+            default:
+            alert('Adress not found');
+            url = null;
+          }
+          if(url !== null) {
+            console.log('opening url = '+url);
+            doOpenUrl(url);
+          }
+        }
+      });
+
+    }
+};
+
+
 /**
 * initialize the menu template and MMenu plugin
 */
 function initGUI(){
+
+  $('#app').on('click',function(ev){
+    var target = $(ev.target);
+    if( target.prop('tagName') === 'A' && target.hasClass('open-url-external')){
+      console.log("opening external url");
+      ev.preventDefault();
+      ev.stopPropagation();
+      try {
+        openURL(
+          target.data('type'),
+          target.data('ip'),
+          target.data('port'),
+          target.data('rid')
+        );
+      } catch (e) {
+        console.error("failed to invoke openUrl");
+      } 
+    }
+  });
   var deferred = Q.defer();
 
   var createMenu = function(docs){
@@ -167,7 +225,7 @@ function initGUI(){
       deferred.resolve();
     }
   });
-  
+
   return deferred;
 }
 
@@ -176,7 +234,7 @@ function doOpenUrl(url){
     var shell = require('electron').shell;
     shell.openExternal(url);
   } else {
-    window.open(url);
+    window.open(url,"_blank");
   }
 }
 /**
@@ -281,42 +339,6 @@ function initRouter() {
   };
 
 
-  var openURL = function(type, ip, port, rid) {
-      console.log('openURL : type = '+type+' ip = '+ip+' port = '+port+' rid = '+rid);
-
-      if( type === 'tomcat-manager'){
-        doOpenUrl('http://'+ip+':'+port+'/manager/html');
-      } else {
-        dbServlet.findOne({ _id : rid}, function(error, doc){
-          if(error){
-            alert(error);
-          } else {
-            var url = '';
-            switch (type) {
-              case "servlet-page":
-                url = 'http://'+ip+':'+port+doc.path;
-                break;
-              case "servlet-doc":
-                url = doc.wikiDocumentationPath;
-                break;
-              case "servlet-change":
-                url = doc.wikiVersionsPath;
-                break;
-
-              default:
-              alert('Adress not found');
-              url = null;
-            }
-            if(url !== null) {
-              console.log('opening url = '+url);
-              doOpenUrl(url);
-            }
-          }
-        });
-
-      }
-  };
-
   var router = Router();
 
   var fragmentRE = /([\w '\+\-%]+)/;
@@ -332,7 +354,7 @@ function initRouter() {
 */
   router.on("/group/:customer/:site/:env/:group", showGroupView);
   router.on("/serviceGroup/:customer/:site/:env/:group/:serviceGroup" , showServiceGroupView);
-  router.on("/openURL/:type/:ip/:port/:rid", openURL);
+  //router.on("/openURL/:type/:ip/:port/:rid", openURL);
 
   // start router listen
   //var router = Router(routes);

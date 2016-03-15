@@ -118,7 +118,15 @@
                   </td>
                   <td class="info">
                     <span class="tomcat-action">
-                      <a href="#/openURL/tomcat-manager/{{../ip}}/{{port}}/manager">manager</a>
+                      <a
+                        class="open-url-external"
+                        data-ip="{{../ip}}"
+                        data-port="{{port}}"
+                        data-type="tomcat-manager"
+                        data-rid="manager"
+                        href="#">
+                          manager
+                        </a>
                     </span>
                   </td>
                 </tr>
@@ -129,12 +137,38 @@
                 </tr>
                 {{#each servlet}}
                   <tr class="servlet-info-tr">
-                    <td><a href="#/openURL/servlet-page/{{../../ip}}/{{../port}}/{{rid}}">{{rid}}</a></td>
+                    <td>
+                      <a
+                        class="open-url-external"
+                        data-ip="{{../../ip}}"
+                        data-port="{{../port}}"
+                        data-type="servlet-page"
+                        data-rid="{{rid}}"
+                        href="#">
+                          {{rid}}
+                        </a>
+                    </td>
                     <td>{{version}}</td>
                     <td>
                       <span class="servlet-action">
-                        <a href="#/openURL/servlet-doc/{{../../ip}}/{{../port}}/{{rid}}">doc</a> |
-                        <a href="#/openURL/servlet-change/{{../../ip}}/{{../port}}/{{rid}}">changes</a>
+                        <a
+                          class="open-url-external"
+                          data-ip="{{../../ip}}"
+                          data-port="{{../port}}"
+                          data-type="servlet-doc"
+                          data-rid="{{rid}}"
+                          href="#">
+                            doc
+                          </a> |
+                        <a
+                          class="open-url-external"
+                          data-ip="{{../../ip}}"
+                          data-port="{{../port}}"
+                          data-type="servlet-change"
+                          data-rid="{{rid}}"
+                          href="#">
+                            changes
+                          </a>
                       </span>
                     </td>
                   </tr>
