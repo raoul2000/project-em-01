@@ -118,13 +118,15 @@ function enableLiveFilter() {
 }
 
 /**
- * [function description]
+ * Create the URL and invoke doOpenUrl to actually open it.
  *
- * @param  {[type]} type  [description]
+ * @param  {[string]} type  [description]
  * @param  {[type]} ip    [description]
  * @param  {[type]} port  [description]
  * @param  {[type]} rid   [description]
- * @param  {object} local [description]
+ * @param  {object} local object containing servlet path and label when available
+ * at the servlet level. In this case, the value overwrites the one stored in dbServlet
+ * store
  * @return {[type]}       [description]
  */
 var openURL = function(type, ip, port, rid, local) {
@@ -133,9 +135,6 @@ var openURL = function(type, ip, port, rid, local) {
     if( type === 'tomcat-manager'){
       doOpenUrl('http://'+ip+':'+port+'/manager/html');
     } else {
-      if( local.path !== undefined) {
-
-      }
       dbServlet.findOne({ _id : rid}, function(error, doc){
         if(error){
           alert(error);
