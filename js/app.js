@@ -117,13 +117,25 @@ function enableLiveFilter() {
   });
 }
 
-
-var openURL = function(type, ip, port, rid) {
-    console.log('openURL : type = '+type+' ip = '+ip+' port = '+port+' rid = '+rid);
+/**
+ * [function description]
+ *
+ * @param  {[type]} type  [description]
+ * @param  {[type]} ip    [description]
+ * @param  {[type]} port  [description]
+ * @param  {[type]} rid   [description]
+ * @param  {object} local [description]
+ * @return {[type]}       [description]
+ */
+var openURL = function(type, ip, port, rid, local) {
+    console.log('openURL : type = '+type+' ip = '+ip+' port = '+port+' rid = '+rid+' local = '+JSON.stringify(local));
 
     if( type === 'tomcat-manager'){
       doOpenUrl('http://'+ip+':'+port+'/manager/html');
     } else {
+      if( local.path !== undefined) {
+
+      }
       dbServlet.findOne({ _id : rid}, function(error, doc){
         if(error){
           alert(error);
@@ -131,7 +143,7 @@ var openURL = function(type, ip, port, rid) {
           var url = '';
           switch (type) {
             case "servlet-page":
-              url = 'http://'+ip+':'+port+doc.path;
+              url = 'http://'+ip+':'+port+ (local.path === undefined ? doc.path : local.path);
               break;
             case "servlet-doc":
               url = doc.wikiDocumentationPath;
@@ -139,7 +151,6 @@ var openURL = function(type, ip, port, rid) {
             case "servlet-change":
               url = doc.wikiVersionsPath;
               break;
-
             default:
             alert('Adress not found');
             url = null;
@@ -171,11 +182,15 @@ function initGUI(){
           target.data('type'),
           target.data('ip'),
           target.data('port'),
-          target.data('rid')
+          target.data('rid'),
+          {
+            path : target.data('path'),
+            label : target.data('label')
+          }
         );
       } catch (e) {
         console.error("failed to invoke openUrl");
-      } 
+      }
     }
   });
   var deferred = Q.defer();
