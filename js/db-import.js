@@ -19,7 +19,9 @@ function extractCustomers(ctdbJson) {
         tomcat.servlet.forEach(function(serv){
             result.push({
                 "rid"     : serv.$.rid,
-                "version" : serv.$.version
+                "version" : serv.$.version,
+                "label"   : serv.$.label,
+                "path"    : serv.$.path
             });
         });
     }
