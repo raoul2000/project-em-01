@@ -164,6 +164,14 @@ var openURL = function(type, ip, port, rid, local) {
     }
 };
 
+function showOverlay() {
+  console.log("show overlay");
+  $('div.overlay').show('fast');
+}
+function hideOverlay() {
+  console.log("hide overlay");
+  $('div.overlay').hide('fast');
+}
 
 /**
 * initialize the menu template and MMenu plugin
@@ -379,18 +387,8 @@ function initRouter() {
  *
  */
  function main(cb) {
-
-   var progress = function(msg){
-     $('#txt-progress').html(msg);
-   };
-
-   var done = function(){
-     initRouter();
-     initGUI(progress);
-     if( cb ) cb();
-   };
-
-   //loadDB(done,progress);
+   
+   showOverlay();
    loadAllStores()
    .then(initRouter)
    .then(initGUI)
@@ -408,5 +406,6 @@ function initRouter() {
    })
    .fail(function(error){
      alert(error);
-   });
+   })
+   .fin(hideOverlay);
  }
