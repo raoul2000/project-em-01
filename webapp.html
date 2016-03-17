@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" manifest="webapp.manifest">
+<html lang="en" __manifest="webapp.manifest">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -11,6 +11,10 @@
     <link href="css/style.css" rel="stylesheet">
   </head>
   <body  id="app">
+
+    <div class="overlay" style="display:none;">
+        <div class="txt"></div>
+    </div>
 
     <div id="page" style="display:none;">
 
@@ -146,7 +150,7 @@
                         data-rid="{{rid}}"
                         data-path="{{path}}"
                         data-label="{{label}}"
-                        title="{{label}}"                        
+                        title="{{label}}"
                         href="#">
                           {{rid}}
                         </a>

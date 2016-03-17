@@ -12,6 +12,10 @@
   </head>
   <body  id="app">
 
+    <div class="overlay">
+        <div class="txt"></div>
+    </div>
+
     <div id="page" style="display:none;">
 
       <nav class="navbar navbar-inverse navbar-fixed-top" style="-webkit-app-region: drag">
@@ -329,6 +333,7 @@
           ipcRenderer.on('open-file-reply',function(ev,xmlFilename){
             if(xmlFilename) {
               console.log('importing file : '+xmlFilename);
+              showOverlay();
               importXMLFile({
                 'xmlFilename' : xmlFilename,
                 'store' :  {
@@ -341,7 +346,8 @@
               })
               .fail(function(error){
                 console.error(error);
-              });
+              })
+              .fin(hideOverlay);
             }
           })
           ipcRenderer.send('open-file-message');
