@@ -221,16 +221,24 @@ function initGUI(){
     });
     // get a reference to the MMenu instance
     var api = $("nav#my-menu").data( "mmenu" );
-
+    $('#hamburger').on('click',function(ev){
+      api.open();
+    });
     // update menu icon depending on open/close action
     api.bind('opened',function($panel){
+      $('#hamburger').addClass('is-active');
+      /*
       $('#icon-menu')
         .removeClass('glyphicon-menu-hamburger')
         .addClass('glyphicon-remove');
+        */
     }).bind('closed',function($panel){
+      $('#hamburger').removeClass('is-active');
+      /*
       $('#icon-menu')
         .removeClass('glyphicon-remove')
         .addClass('glyphicon-menu-hamburger');
+        */
     });
 
   };
@@ -387,7 +395,7 @@ function initRouter() {
  *
  */
  function main(cb) {
-   
+
    showOverlay();
    loadAllStores()
    .then(initRouter)

@@ -12,6 +12,8 @@ cd project-em-01
 npm install
 ```
 
+**warging** : the jquery.mmenu plugin must be installed manually in the `vendor` folder (to improve)
+
 ## Usage
 
 ### Desktop app

@@ -1,3 +1,4 @@
+
 .content {
   padding-top: 46px;
 }
@@ -16,6 +17,50 @@
 a, button {
    -webkit-app-region: no-drag;
 }
+
+
+/* begin hamburger */
+#hamburger {
+   border: 0px solid #999;
+   display: block;
+   width: 45px;
+   padding: 5px 10px;
+   cursor: pointer;
+}
+#hamburger span {
+   background: #FFF;
+   display: block;
+   height: 3px;
+   margin: 5px 0;
+}
+html.mm-opened #hamburger span.top-bar {
+   transform: rotate( 45deg );
+   top: 8px;
+}
+html.mm-opened #hamburger span.middle-bar {
+   opacity: 0;
+}
+html.mm-opened #hamburger span.bottom-bar {
+   transform: rotate( -45deg );
+   top: -8px;
+}
+#hamburger {
+   overflow: hidden;
+}
+#hamburger span {
+   position: relative;
+   transform: rotate( 0 );
+   top: 0;
+   left: 0;
+   opacity: 1;
+
+   transition: none 0.5s ease;
+   transition-property: transform, top, left, opacity;
+}
+html.mm-opened #hamburger span.middle-bar {
+   left: -40px;
+}
+/* end hambgurger */
 
 .toolbar-window {
   display: block;
