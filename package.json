@@ -7,12 +7,14 @@
     "start": "electron index.js",
     "package": "electron-packager . ctdb-explorer --platform=win32 --arch=x64 --version=0.36.0 --overwrite",
     "webapp": "http-server . -o http://127.0.0.1:8080/webapp.html",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall" : "node ./tasks/post-install.js"
   },
   "author": "ede",
   "license": "ISC",
   "devDependencies": {
-    "electron-prebuilt": "^0.36.0"
+    "electron-prebuilt": "^0.36.0",
+    "unzip": "^0.1.11"
   },
   "dependencies": {
     "bootstrap": "^3.3.6",

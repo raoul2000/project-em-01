@@ -218,7 +218,12 @@ function initGUI(){
         "preventDefault": false
       },
       "extensions": ["pagedim-black", "pageshadow"]
-    });
+      }, {
+      "offCanvas": {
+          "pageSelector": "#page"
+      }
+  });
+  
     // get a reference to the MMenu instance
     var api = $("nav#my-menu").data( "mmenu" );
     $('#hamburger').on('click',function(ev){
