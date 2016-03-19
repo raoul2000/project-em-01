@@ -2,3 +2,4 @@ node_modules
 ctdb-explorer-win32-x64
 data/*.xml
 data/*.db
+vendor/*
