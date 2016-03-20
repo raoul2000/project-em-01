@@ -9,13 +9,13 @@ var Q = require('q');
 * to make it more simple.
 * @return {object} the simplified ctdb that contains only customer information
 */
-function extractCustomers(ctdbJson) {
+function normalizeCustomer(customer) {
   /**
   *
   */
   var buildServlet = function(tomcat){
     var result = [];
-    if(tomcat.servlet) {
+    if( Array.isArray(tomcat.servlet)) {
         tomcat.servlet.forEach(function(serv){
             result.push({
                 "rid"     : serv.$.rid,
@@ -32,16 +32,18 @@ function extractCustomers(ctdbJson) {
   */
   var buildTomcat = function(serviceGroup){
     var result = [];
-    if( serviceGroup.tomcats) {
+    if( Array.isArray(serviceGroup.tomcats) ) {
         serviceGroup.tomcats.forEach(function(tomcats){
+          if( Array.isArray(tomcats.tomcat)) {
             tomcats.tomcat.forEach(function(tomcat){
-                result.push({
-                    "name"    : tomcat.$.name,
-                    "port"    : tomcat.$.port,
-                    "version" : tomcat.$.version,
-                    "servlet" : buildServlet(tomcat)
-                });
+              result.push({
+                "name"    : tomcat.$.name,
+                "port"    : tomcat.$.port,
+                "version" : tomcat.$.version,
+                "servlet" : buildServlet(tomcat)
+              });
             });
+          }
         });
     }
     return result;
@@ -51,9 +53,9 @@ function extractCustomers(ctdbJson) {
   */
   var buildComponent = function(serviceGroup){
     var result = [];
-    if( serviceGroup.serverComponents ) {
+    if( Array.isArray(serviceGroup.serverComponents) ) {
         serviceGroup.serverComponents.forEach(function(serverComponents){
-            if( serverComponents ) {
+            if( Array.isArray(serverComponents.serverComponent)  ) {
                 serverComponents.serverComponent.forEach(function(serverComponent){
                     result.push({
                         "version" : serverComponent.$.version,
@@ -68,74 +70,79 @@ function extractCustomers(ctdbJson) {
   /**
   *
   */
-  var buildServiceGroup = function(serviceGroups) {
+  var buildServiceGroup = function(methodeEnvironment) {
     var results = [];
-    serviceGroups.forEach(function(serviceGroups){
-        serviceGroups.serviceGroup.forEach(function(serviceGroup){
-            results.push( {
-                "name"      : serviceGroup.$.name,
-                "login"     : serviceGroup.login[0].$.name,
-                "host"      : serviceGroup.host[0].$.name,
-                "ip"        : (function(serviceGroup){
-                        var result = null;
-                        try {
-                            result=serviceGroup.ip[0].$.value;
-                        } catch (e) {
-                          console.log('missing ip');
-                        }
-                        return result;
-                })(serviceGroup),
-                'component' : buildComponent(serviceGroup),
-                'tomcat'    : buildTomcat(serviceGroup)
-            });
+    if( Array.isArray(methodeEnvironment.serviceGroups) && methodeEnvironment.serviceGroups.length !== 0)  {
+      methodeEnvironment.serviceGroups[0].serviceGroup.forEach(function(serviceGroup){
+        results.push( {
+          "name"      : serviceGroup.$.name,
+          "login"     : serviceGroup.login[0].$.name,
+          "host"      : serviceGroup.host[0].$.name,
+          "ip"        : (function(serviceGroup){
+            var result = null;
+            try {
+              result=serviceGroup.ip[0].$.value;
+            } catch (e) {
+              console.log('missing ip');
+            }
+            return result;
+          })(serviceGroup),
+          'component' : buildComponent(serviceGroup),
+          'tomcat'    : buildTomcat(serviceGroup)
         });
-    });
+      });
+    }
     return results;
   };
   /**
   *
   */
-  var buildGroup = function(infrastructure) {
-    if( infrastructure.hasOwnProperty('environments') === false ) return null;
-    var groups = [];
-    infrastructure.environments[0].environment.forEach(function(environment){
-        if(environment.methodeEnvironments) {
-            environment.methodeEnvironments.forEach(function(methodeEnvironments){
-                methodeEnvironments.methodeEnvironment.forEach(function(methodeEnvironment){
-                    groups.push({
-                        "name"          : methodeEnvironment.$.name,
-                        "label"         : methodeEnvironment.$.label,
-                        "serviceGroup"  : buildServiceGroup(methodeEnvironment.serviceGroups)
-                    });
-                });
+  var buildEnv = function(infra) {
+    var envs = [];
+    if( Array.isArray(infra.environments) && infra.environments.length !== 0) {
+      infra.environments[0].environment.forEach(function(environment){
+        if(Array.isArray(environment.methodeEnvironments) && environment.methodeEnvironments.length !== 0 ) {
+          environment.methodeEnvironments[0].methodeEnvironment.forEach(function(methodeEnvironment){
+            envs.push({
+              "name"          : methodeEnvironment.$.name,
+              "label"         : methodeEnvironment.$.label,
+              "serviceGroup"  : buildServiceGroup(methodeEnvironment)
             });
+          });
         }
-    });
-    return groups;
+      });
+    }
+    return envs;
   };
   /**
   *
   */
-  var buildEnv = function(site){
-    if( site.infrastructures == null) return [];
-    return site.infrastructures[0].infrastructure.map(function(infrastructure){
-      return {
-        'name' : infrastructure.$.name, // TODO : add cluster
-        'group' : buildGroup(infrastructure)
-      };
-    });
+  var buildInfra = function(site){
+    var result = [];
+    if( Array.isArray(site.infrastructures) && site.infrastructures.length !== 0) {
+      site.infrastructures[0].infrastructure.map(function(infra){
+        result.push({
+          'name' : infra.$.name, // TODO : add cluster
+          'env' : buildEnv(infra)
+        });
+      });
+    }
+    return result;
   };
   /**
   *
   */
   var buildSite = function(customer){
-    if( customer.sites === null) return [];
-    return customer.sites[0].site.map(function(site){
-      return {
-        'name' : site.$.name,
-        'env'  : buildEnv(site)
-      };
-    });
+    var result = [];
+    if( Array.isArray(customer.sites) && customer.sites.length !== 0) {
+      customer.sites[0].site.map(function(site){
+        result.push({
+          'name'   : site.$.name,
+          'infra'  : buildInfra(site)
+        });
+      });
+    }
+    return result;
   };
   /**
   *
@@ -147,7 +154,7 @@ function extractCustomers(ctdbJson) {
     };
   };
 
-  return ctdbJson.informations. customers[0].customer.map(buildCustomer);
+  return buildCustomer(customer);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -174,6 +181,7 @@ function importXMLFile(arg){
    */
   function parseXML(arg){
     var deferred = Q.defer();
+    // TODO : why use defered ? why not Promise ?
     fs.readFile(arg.xmlFilename, function(err, data) {
       if (err) {
         deferred.reject(new Error(err));
@@ -200,18 +208,22 @@ function importXMLFile(arg){
         if(err) {
           reject(new Error(err));
         } else {
-          var servletList = arg.jsonData.informations.servlets[0].servlet;
-          for (var i = 0; i < servletList.length; i++) {
-            console.log(servletList[i].$.id);
-            var servletAttr = servletList[i].$;
-            arg.store.servlet.insert({
-              '_id'   : servletAttr.id,
-              'label' : servletAttr.label,
-              'type'  : servletAttr.type,
-              'path'  : servletAttr.path,
-              'wikiDocumentationPath' : servletAttr.wikiDocumentationPath,
-              'wikiVersionsPath' : servletAttr.wikiVersionsPath
-            });
+          if( Array.isArray(arg.jsonData.informations.servlets)
+            && arg.jsonData.informations.servlets.length !==0) {
+
+            var servletList = arg.jsonData.informations.servlets[0].servlet;
+            for (var i = 0; i < servletList.length; i++) {
+              console.log("normalizing servlet (id): "+servletList[i].$.id);
+              var servletAttr = servletList[i].$;
+              arg.store.servlet.insert({
+                '_id'   : servletAttr.id,
+                'label' : servletAttr.label,
+                'type'  : servletAttr.type,
+                'path'  : servletAttr.path,
+                'wikiDocumentationPath' : servletAttr.wikiDocumentationPath,
+                'wikiVersionsPath' : servletAttr.wikiVersionsPath
+              });
+            }
           }
           resolve(arg);
         }
@@ -226,13 +238,17 @@ function importXMLFile(arg){
         if(err) {
           reject(new Error(err));
         } else {
-
-          var customers = extractCustomers(arg.jsonData);
-          for (var i = 0; i < customers.length; i++) {
-            console.log("importing customer : "+customers[i].name);
-            arg.store.customer.insert(customers[i]);
+          try {
+            var customerList = arg.jsonData.informations.customers[0].customer;
+            for (var i = 0; i < customerList.length; i++) {
+              console.log("normalizing customer : "+customerList[i].$.name);
+              var customerOk = normalizeCustomer(customerList[i]);
+              arg.store.customer.insert(customerOk);
+            }
+            resolve(arg);
+          } catch (e) {
+            reject(e);
           }
-          resolve(arg);
         }
       });
     });
@@ -262,6 +278,7 @@ function importXMLFile(arg){
 
     return Q.allSettled([compactServlet,compactCustomer]);
   }
+
   // add 'jsonData' property to the arg object. It will contain
   // the JSON representation of the XML file once parsed and converted
   // by 'parseXML'.
@@ -277,7 +294,6 @@ function importXMLFile(arg){
 
 function test1() {
 
-
     var Datastore = require('nedb');
     var servletDb = new Datastore({
       filename: './tmp/servlet.db',
@@ -289,16 +305,21 @@ function test1() {
     });
 
     var arg = {
-      'xmlFilename' : __dirname + '/../CTDB-merged.xml',
+      'xmlFilename' : __dirname + '/../data/CTDB-merged.xml',
       'store' :  {
         'servlet' : servletDb,
         'customer' : customerDb
       }
     };
+
     importXMLFile(arg)
     .then(function(result){
-      console.log("done : "+result.store.servlet.filename);
-    });
+      console.log("terminated");
+    })
+    .fail(function(err){
+      console.error(err);
+    })
+    ;
 }
 
 //test1();
